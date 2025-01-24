@@ -10,16 +10,16 @@ int exp_int = 200;
 EXPORT_SYMBOL_GPL(exp_int);
 
 #if (BITS_PER_LONG == 32)
-u32 get_skey(int p);
+u32 get_skey(int p)
 #else
-u64 get_skey(int p);
+u64 get_skey(int p)
 #endif
 {
 
 #if (BITS_PER_LONG == 32)
   u32 secret = 0x567def;
 #else
-  u32 secret = 0x123abc4567def;
+  u64 secret = 0x123abc4567def;
 #endif
 
   if (p == THE_ONE) {
