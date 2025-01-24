@@ -70,6 +70,39 @@ rmmod: ERROR: Module core_lkm is in use by: client_lkm
 
 This ensures that dependent modules (`client_lkm` in this case) are not accidentally broken by removing their base module (`core_lkm`).
 
+### **What Happens If the Core Module Is Missing?**
+
+If you attempt to load the `client` module before the `core` module, you will encounter an error because the `client` module depends on symbols exported by the `core` module.
+
+#### **Reproduce the Issue**
+
+Try to insert the `client` module without first inserting the `core` module:
+```bash
+bash -c "sudo rmmod core_lkm.ko; cd client && make && sudo insmod client_lkm.ko"
+```
+
+#### **Expected Output**
+
+You will see an error message similar to this:
+```bash
+insmod: ERROR: could not insert module client_lkm.ko: Unknown symbol in module
+```
+	
+#### **Check Kernel Logs**
+
+Inspect the kernel logs to identify the missing symbols:
+```bash
+sudo journalctl -k
+```
+
+The output will look something like this:
+```
+Jan 24 08:34:26 dev-kernel kernel: client_lkm: Unknown symbol exp_int (err -2)
+Jan 24 08:34:26 dev-kernel kernel: client_lkm: Unknown symbol get_skey (err -2)
+```
+
+This indicates that the `client_lkm` module is trying to use symbols (like `exp_int` or `get_skey`) exported by the `core` module, but the `core` module is not loaded.
+
 ---
 
 ## **Cleaning Up**
@@ -104,5 +137,12 @@ The `core` module must always be loaded before the `client` module to resolve th
 ## **Additional Notes**
 
 - **Building for a Specific Kernel**: Ensure the `LKP_KSRC` variable is set and exported before using `Makefile`, if you're not building for the currently running kernel.
+
+
+
+
+Here’s the updated **Dependency Management** section with the new part added about what happens when you try to load the `client` module without the `core` module:
+
+---
 
 
